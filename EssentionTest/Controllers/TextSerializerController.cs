@@ -3,10 +3,11 @@ using Essention.Text;
 using System.IO;
 using System;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace EssentionTest.Controllers
 {
-    //[Route("api/[controller]")]
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class TextSerializerController : ApiController
     {
         [HttpPost()]
@@ -14,7 +15,7 @@ namespace EssentionTest.Controllers
         {
             if (value.FormatType == "cvs")
             {
-                var cvsText = TextSerializer.SerializeToCvs(value.Text, value.SeparatorCvs);
+                var formatText = TextSerializer.SerializeToCvs(value.Text, value.SeparatorCvs);
 
                 var folder = System.Web.HttpContext.Current.Server.MapPath("~/App_Data/Files");
                 Directory.CreateDirectory(folder);
@@ -23,11 +24,11 @@ namespace EssentionTest.Controllers
                 {
                     using (var streamWriter = new StreamWriter(fileStream))
                     {
-                        streamWriter.Write(cvsText);
+                        streamWriter.Write(formatText);
                     }
                 }
 
-                return Ok(cvsText);
+                return Ok(new { formatText });
             }
             else if (value.FormatType == "xml")
             {
@@ -35,10 +36,11 @@ namespace EssentionTest.Controllers
 
                 var folder = System.Web.HttpContext.Current.Server.MapPath("~/App_Data/Files");
                 Directory.CreateDirectory(folder);
-
                 xmlText.Save($"{folder}/xmlFile{(DateTime.Now - new DateTime()).Ticks}.xml");
 
-                return Ok(xmlText.Root);
+                var formatText = xmlText.Root.ToString();
+
+                return Ok(new { formatText });
             }
             
             return BadRequest();
